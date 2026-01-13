@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cosmos</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0"
+    ></script>
+    <style>
+      :root {
+        --primary: #111;
+        --accent: #0066ff;
+        --bg: #fff;
+        --border: #e5e7eb;
+      }
+      body {
+        margin: 0;
+        display: flex;
+        height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI",
+          sans-serif;
+        overflow: hidden;
+        color: var(--primary);
+        background: #fff;
+      }
+      #sidebar {
+        width: 420px;
+        min-width: 380px;
+        background: #fff;
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        z-index: 10;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
+      }
+      #chart {
+        flex: 1;
+        background: #f9fafb;
+        position: relative;
+        overflow: hidden;
+      }
+      .brand-header {
+        padding: 32px 24px 8px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .brand-title {
+        font-size: 1.1rem;
+        font-weight: 900;
+        letter-spacing: 0.6em;
+        color: var(--primary);
+        margin: 0;
+        user-select: none;
+      }
+      .search-area {
+        padding: 12px 24px 24px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .top-bar {
+        display: flex;
+        align-items: center;
+        width: 100%;
+      }
+      .icon-btn {
+        background: none;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #666;
+        transition: all 0.2s ease;
+      }
+      .icon-btn:hover {
+        border-color: #111;
+        color: #111;
+        background: #f9f9f9;
+      }
+      .icon-btn svg {
+        width: 20px;
+        height: 20px;
+        stroke-width: 2;
+      }
+      .search-box {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        background: #f3f4f6;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        padding: 0 14px;
+        height: 42px;
+        transition: 0.2s;
+        gap: 10px;
+      }
+      .search-box:focus-within {
+        background: #fff;
+        border-color: #111;
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+      }
+      .search-icon {
+        color: #999;
+        width: 18px;
+        height: 18px;
+        stroke-width: 2.5;
+      }
+      input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 0;
+        font-size: 15px;
+        outline: none;
+        font-weight: 500;
+        color: #111;
+        height: 100%;
+      }
+      .tags-wrapper {
+        max-height: 100px;
+        overflow-y: auto;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .tag-btn {
+        border: none;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: white;
+        cursor: pointer;
+        transition: 0.1s;
+        opacity: 0.85;
+      }
+      .tag-btn:hover {
+        transform: translateY(-1px);
+        opacity: 1;
+      }
+      #content-area {
+        flex: 1;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+      }
+      .list-item {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+        transition: 0.1s;
+      }
+      .list-item:hover {
+        background: #f3f4f6;
+        padding-left: 28px;
+      }
+      .list-item-title {
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 6px;
+        line-height: 1.4;
+        color: #111;
+      }
+      .list-item-meta {
+        font-size: 0.8rem;
+        color: #666;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        font-weight: 500;
+      }
+      .detail-view {
+        padding: 24px;
+        animation: fadeIn 0.2s;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .nav-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        align-items: center;
+      }
+      .back-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #666;
+        font-weight: 600;
+        font-size: 0.9rem;
+        padding: 0;
+      }
+      .back-btn:hover {
+        color: #000;
+        text-decoration: underline;
+      }
+      .nav-btn {
+        padding: 6px 12px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+      .nav-btn:hover {
+        background: #f9f9f9;
+        border-color: #bbb;
+      }
+      .cluster-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        color: white;
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+      .feature-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin: 0 0 20px 0;
+        letter-spacing: -0.5px;
+        line-height: 1.1;
+        color: #000;
+      }
+      .best-exp-box {
+        background: #f4f6f8;
+        border-left: 4px solid var(--accent);
+        padding: 20px;
+        border-radius: 0 8px 8px 0;
+        margin-bottom: 30px;
+      }
+      .best-text {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #111;
+        line-height: 1.5;
+        margin-bottom: 12px;
+      }
+      .best-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+      }
+      .model-card {
+        background: #fff;
+        border: 1px solid #eee;
+        border-left-width: 4px;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+      }
+      .model-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
+      .model-text {
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: #444;
+      }
+      .badge {
+        padding: 3px 8px;
+        border-radius: 4px;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+      }
+      #loader {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+        flex-direction: column;
+        transition: opacity 0.4s;
+      }
+      .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid #f3f3f3;
+        border-top-color: #111;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin-bottom: 16px;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .placeholder {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #999;
+        text-align: center;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loader">
+      <div class="spinner"></div>
+      <div
+        id="loading-text"
+        style="font-weight: 600; font-size: 1rem; color: #444"
+      >
+        Loading Cosmos
+      </div>
+    </div>
+
+    <div id="sidebar">
+      <div class="brand-header">
+        <h1 class="brand-title">COSMOS</h1>
+        <button
+          id="home-btn"
+          class="icon-btn"
+          onclick="resetHome()"
+          title="Reset Home"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <div class="search-area">
+        <div class="top-bar">
+          <div class="search-box">
+            <svg
+              class="search-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+              />
+            </svg>
+            <input
+              type="text"
+              id="search-input"
+              placeholder="Search features..."
+            />
+          </div>
+        </div>
+        <div class="tags-wrapper" id="tags-container"></div>
+      </div>
+      <div id="content-area">
+        <div class="placeholder">
+          <div>Select a feature point<br />or enter a search term</div>
+        </div>
+      </div>
+    </div>
+    <div id="chart"></div>
+
+    <script type="module">
+      import { pipeline } from "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0";
+
+      let state = {
+        data: [],
+        pipeline: null,
+        neighbors: [],
+        index: 0,
+        mode: "idle",
+        currentList: [],
+        searchData: [],
+      };
+
+      let viz = {
+        svg: null,
+        g: null,
+        circles: null,
+        x: null,
+        y: null,
+        zoom: null,
+        color: null,
+      };
+
+      async function init() {
+        try {
+          const res = await d3.json("d3_data_v2.json");
+          state.data = res.data;
+
+          state.data.forEach((f) => {
+            if (f.all_explanations && f.all_explanations.length > 0) {
+              let bestExp = null;
+              let maxScore = -Infinity;
+              f.all_explanations.forEach((e) => {
+                const s = e.scores || {};
+                const weightedScore =
+                  (s.fuzz || 0) * 0.5 +
+                  (s.detection || 0) * 0.3 +
+                  (s.embedding || 0) * 0.2;
+                e.computed_score = weightedScore;
+                if (weightedScore > maxScore) {
+                  maxScore = weightedScore;
+                  bestExp = e;
+                }
+              });
+              if (bestExp) {
+                f.display_text = bestExp.text;
+                f.source_model = bestExp.llm_explainer;
+                f.source_score = maxScore;
+              }
+            }
+          });
+
+          state.searchData = state.data.flatMap((f) =>
+            f.all_explanations.map((e) => ({
+              ...e,
+              feature_id: f.feature_id,
+              group_tag: f.group_tag,
+              x: f.x,
+              y: f.y,
+              default_display: f.display_text,
+              default_model: f.source_model,
+            }))
+          );
+
+          initVis(state.data);
+          initTags(state.data);
+
+          document.getElementById("loading-text").innerText =
+            "Initializing AI Engine";
+          state.pipeline = await pipeline(
+            "feature-extraction",
+            "Xenova/all-MiniLM-L6-v2"
+          );
+
+          document.getElementById("loader").style.opacity = 0;
+          setTimeout(() => document.getElementById("loader").remove(), 400);
+        } catch (e) {
+          console.error(e);
+          document.getElementById("loading-text").innerText =
+            "Failed to load data";
+        }
+      }
+
+      function initVis(data) {
+        const container = document.getElementById("chart");
+        const w = container.clientWidth,
+          h = container.clientHeight;
+        viz.svg = d3
+          .select("#chart")
+          .append("svg")
+          .attr("width", w)
+          .attr("height", h);
+        viz.g = viz.svg.append("g");
+        viz.zoom = d3
+          .zoom()
+          .scaleExtent([0.5, 12])
+          .on("zoom", (e) => viz.g.attr("transform", e.transform));
+        viz.svg.call(viz.zoom).on("click", resetHome);
+
+        viz.x = d3
+          .scaleLinear()
+          .domain(d3.extent(data, (d) => d.x))
+          .range([60, w - 60]);
+        viz.y = d3
+          .scaleLinear()
+          .domain(d3.extent(data, (d) => d.y))
+          .range([h - 60, 60]);
+        viz.color = d3.scaleOrdinal(d3.schemePaired.concat(d3.schemeSet3));
+
+        viz.circles = viz.g
+          .selectAll("circle")
+          .data(data)
+          .join("circle")
+          .attr("cx", (d) => viz.x(d.x))
+          .attr("cy", (d) => viz.y(d.y))
+          .attr("r", 5)
+          .attr("fill", (d) => getTagColor(d.group_tag))
+          .attr("opacity", 0.6)
+          .style("cursor", "pointer")
+          .on("click", (e, d) => {
+            e.stopPropagation();
+            selectFeature(d.feature_id);
+          });
+
+        const centroids = d3
+          .groups(data, (d) => d.group_tag)
+          .map(([k, v]) => ({
+            tag: k,
+            x: d3.mean(v, (d) => d.x),
+            y: d3.mean(v, (d) => d.y),
+          }));
+
+        viz.g
+          .selectAll("text")
+          .data(centroids)
+          .join("text")
+          .attr("x", (d) => viz.x(d.x))
+          .attr("y", (d) => viz.y(d.y))
+          .text((d) => d.tag)
+          .attr("text-anchor", "middle")
+          .style("font-size", "12px")
+          .style("font-weight", "800")
+          .style("fill", "#222")
+          .style("text-shadow", "0 2px 4px white, 0 0 4px white")
+          .style("cursor", "pointer")
+          .on("click", (e, d) => {
+            e.stopPropagation();
+            filterCluster(d.tag);
+          });
+      }
+
+      function getTagColor(tag) {
+        return tag === "Misc" ? "#999" : viz.color(tag);
+      }
+
+      function zoomTo(x, y, k = 3.5) {
+        const c = document.getElementById("chart");
+        const t = d3.zoomIdentity
+          .translate(c.clientWidth / 2, c.clientHeight / 2)
+          .scale(k)
+          .translate(-viz.x(x), -viz.y(y));
+        viz.svg.transition().duration(600).call(viz.zoom.transform, t);
+      }
+
+      window.selectFeature = function (id) {
+        const target = state.data.find((d) => d.feature_id === id);
+        if (!target) return;
+        state.neighbors = state.data
+          .map((d) => ({
+            id: d.feature_id,
+            dist: (d.x - target.x) ** 2 + (d.y - target.y) ** 2,
+          }))
+          .sort((a, b) => a.dist - b.dist);
+        state.index = 0;
+        updateDetail(target);
+        highlight([target]);
+        zoomTo(target.x, target.y);
+      };
+
+      window.nav = function (dir) {
+        state.index = Math.max(
+          0,
+          Math.min(state.neighbors.length - 1, state.index + dir)
+        );
+        const target = state.data.find(
+          (d) => d.feature_id === state.neighbors[state.index].id
+        );
+        updateDetail(target);
+        highlight([target]);
+        zoomTo(target.x, target.y);
+      };
+
+      function updateDetail(d) {
+        const container = document.getElementById("content-area");
+        const color = getTagColor(d.group_tag);
+        const modelStyle = getModelStyle(d.source_model);
+        let html = `
+          <div class="detail-view">
+            <div class="nav-header">
+              <button class="back-btn" onclick="goBack()">Back</button>
+              <div>
+                <button class="nav-btn" onclick="nav(-1)" ${
+                  state.index === 0 ? "disabled" : ""
+                }>Prev</button>
+                <button class="nav-btn" onclick="nav(1)">Next</button>
+              </div>
+            </div>
+            <span class="cluster-badge" style="background:${color}">${
+          d.group_tag
+        }</span>
+            <h2 class="feature-title">#${d.feature_id}</h2>
+            <div class="best-exp-box">
+              <div class="best-text">"${d.display_text}"</div>
+              <div class="best-meta">
+                <span class="badge" style="background:${modelStyle.color}">${
+          modelStyle.name
+        }</span>
+                <span>Weighted Score: ${(d.source_score || 0).toFixed(2)}</span>
+              </div>
+            </div>
+            <h4 style="color:#888; margin-bottom:15px; font-weight:700; font-size:0.85rem; letter-spacing:0.5px;">ALL EXPLANATIONS</h4>`;
+
+        d.all_explanations
+          .sort((a, b) => b.computed_score - a.computed_score)
+          .forEach((e) => {
+            const style = getModelStyle(e.llm_explainer);
+            html += `
+            <div class="model-card" style="border-left-color:${style.color}">
+              <div class="model-header">
+                <span style="color:${style.color}">${style.name}</span>
+                <span>${(e.computed_score || 0).toFixed(2)}</span>
+              </div>
+              <div class="model-text">${e.text}</div>
+            </div>`;
+          });
+        container.innerHTML = html + "</div>";
+      }
+
+      function getModelStyle(name) {
+        const n = (name || "").toLowerCase();
+        if (n.includes("gpt")) return { name: "GPT", color: "#10a37f" };
+        if (n.includes("gemini")) return { name: "Gemini", color: "#1a73e8" };
+        if (n.includes("llama")) return { name: "Llama", color: "#8e44ad" };
+        return { name: name || "Unknown", color: "#666" };
+      }
+
+      async function handleSearch() {
+        const q = document.getElementById("search-input").value;
+        if (!q) return;
+        document.getElementById("search-input").style.opacity = 0.5;
+        const emb = await state.pipeline(q, {
+          pooling: "mean",
+          normalize: true,
+        });
+        const queryVec = Array.from(emb.data);
+        let allScores = state.searchData.map((item) => ({
+          ...item,
+          sim: cosineSim(queryVec, item.vector),
+        }));
+        allScores.sort((a, b) => b.sim - a.sim);
+        let filtered = allScores.filter((d) => d.sim > 0.2);
+        if (filtered.length < 5) filtered = allScores.slice(0, 5);
+        state.mode = "search";
+        state.currentList = filtered;
+        renderList(filtered, "Search Results");
+        highlight(filtered);
+        if (filtered.length > 0) zoomTo(filtered[0].x, filtered[0].y, 2.0);
+        document.getElementById("search-input").style.opacity = 1;
+      }
+
+      function filterCluster(tag) {
+        document.getElementById("search-input").value = "";
+        const targets = state.data.filter((d) => d.group_tag === tag);
+        state.mode = "cluster";
+        state.currentList = targets;
+        renderList(targets, tag);
+        highlight(targets);
+        if (targets.length)
+          zoomTo(
+            d3.mean(targets, (d) => d.x),
+            d3.mean(targets, (d) => d.y),
+            1.5
+          );
+      }
+
+      function renderList(items, title) {
+        const container = document.getElementById("content-area");
+        let html = `<div style="padding:20px 24px; border-bottom:1px solid #eee; font-weight:800; font-size:1rem; color:#444;">${title} (${items.length})</div>`;
+        items.forEach((item) => {
+          const isSearch = state.mode === "search";
+          const dText = isSearch ? item.text : item.display_text;
+          const mName = isSearch ? item.llm_explainer : item.source_model;
+          const color = getTagColor(item.group_tag);
+          const mStyle = getModelStyle(mName);
+          html += `
+            <div class="list-item" onclick="selectFeature(${item.feature_id})">
+              <div class="list-item-title">${dText}</div>
+              <div class="list-item-meta">
+                <span class="badge" style="background:${mStyle.color}">${
+            mStyle.name
+          }</span>
+                <span style="color:#ddd">|</span>
+                <span style="color:${color}; font-weight:bold;">${
+            item.group_tag
+          }</span>
+                <span style="color:#ddd">•</span>
+                <span>#${item.feature_id}</span>
+                ${
+                  isSearch
+                    ? `<span style="color:#ddd">•</span> <span>${(
+                        item.sim * 100
+                      ).toFixed(0)}%</span>`
+                    : ""
+                }
+              </div>
+            </div>`;
+        });
+        container.innerHTML = html;
+      }
+
+      function highlight(items) {
+        const ids = new Set(items.map((d) => d.feature_id));
+        viz.circles
+          .transition()
+          .duration(200)
+          .attr("opacity", (d) => (ids.has(d.feature_id) ? 1 : 0.25))
+          .attr("stroke", (d) => (ids.has(d.feature_id) ? "#111" : "none"))
+          .attr("stroke-width", (d) => (ids.has(d.feature_id) ? 2 : 0));
+        viz.circles.filter((d) => ids.has(d.feature_id)).raise();
+      }
+
+      window.goBack = function () {
+        if (state.mode === "search")
+          renderList(state.currentList, "Search Results");
+        else if (state.mode === "cluster")
+          renderList(state.currentList, state.currentList[0].group_tag);
+        else resetHome();
+      };
+
+      function resetHome() {
+        state.mode = "idle";
+        document.getElementById("search-input").value = "";
+        document.getElementById(
+          "content-area"
+        ).innerHTML = `<div class="placeholder"><div>Select a feature point<br>or enter a search term</div></div>`;
+        viz.circles
+          .transition()
+          .duration(500)
+          .attr("opacity", 0.6)
+          .attr("stroke", "none");
+        viz.svg
+          .transition()
+          .duration(750)
+          .call(viz.zoom.transform, d3.zoomIdentity);
+      }
+
+      function initTags(data) {
+        const tags = [...new Set(data.map((d) => d.group_tag))]
+          .filter((t) => t !== "Misc")
+          .sort();
+        const container = document.getElementById("tags-container");
+        container.innerHTML = "";
+        tags.forEach((t) => {
+          const btn = document.createElement("button");
+          btn.className = "tag-btn";
+          btn.innerText = t;
+          btn.style.backgroundColor = getTagColor(t);
+          btn.onclick = () => {
+            document.getElementById("search-input").value = t;
+            handleSearch();
+          };
+          container.appendChild(btn);
+        });
+      }
+
+      function cosineSim(a, b) {
+        let dot = 0,
+          mA = 0,
+          mB = 0;
+        for (let i = 0; i < a.length; i++) {
+          dot += a[i] * b[i];
+          mA += a[i] ** 2;
+          mB += b[i] ** 2;
+        }
+        return dot / (Math.sqrt(mA) * Math.sqrt(mB));
+      }
+
+      document
+        .getElementById("search-input")
+        .addEventListener("keypress", (e) => {
+          if (e.key === "Enter") handleSearch();
+        });
+      window.resetHome = resetHome;
+      init();
+    </script>
+  </body>
+</html>
