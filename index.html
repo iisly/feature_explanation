@@ -504,7 +504,17 @@
           .scaleLinear()
           .domain(d3.extent(data, (d) => d.y))
           .range([h - 60, 60]);
-        viz.color = d3.scaleOrdinal(d3.schemePaired.concat(d3.schemeSet3));
+
+        // Tableau10 + 6
+        viz.color = d3.scaleOrdinal([
+          ...d3.schemeTableau10,
+          "#393b79", // 11. 네이비
+          "#8c6d31", // 12. 앤틱 골드
+          "#637939", // 13. 올리브 그린
+          "#843c39", // 14. 브릭 레드
+          "#7b4173", // 15. 플럼
+          "#17becf", // 16. 시안
+        ]);
 
         viz.circles = viz.g
           .selectAll("circle")
@@ -552,7 +562,7 @@
         return tag === "Misc" ? "#999" : viz.color(tag);
       }
 
-      function zoomTo(x, y, k = 3.5) {
+      function zoomTo(x, y, k = 2) {
         const c = document.getElementById("chart");
         const t = d3.zoomIdentity
           .translate(c.clientWidth / 2, c.clientHeight / 2)
@@ -657,13 +667,24 @@
           sim: cosineSim(queryVec, item.vector),
         }));
         allScores.sort((a, b) => b.sim - a.sim);
-        let filtered = allScores.filter((d) => d.sim > 0.2);
-        if (filtered.length < 5) filtered = allScores.slice(0, 5);
+
+        let filtered = allScores.filter((d) => d.sim > 0.5); // threshold: 50%
+        if (filtered.length > 50) {
+          filtered = filtered.slice(0, 50); // max result: 50
+        } else if (filtered.length < 10) {
+          filtered = allScores.slice(0, 10); // min result: 10
+        }
+
         state.mode = "search";
         state.currentList = filtered;
         renderList(filtered, "Search Results");
         highlight(filtered);
-        if (filtered.length > 0) zoomTo(filtered[0].x, filtered[0].y, 2.0);
+        if (filtered.length)
+          zoomTo(
+            d3.mean(filtered, (d) => d.x),
+            d3.mean(filtered, (d) => d.y),
+            1.5
+          );
         document.getElementById("search-input").style.opacity = 1;
       }
 
@@ -794,4 +815,3 @@
     </script>
   </body>
 </html>
-

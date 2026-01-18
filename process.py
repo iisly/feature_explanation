@@ -23,14 +23,14 @@ def get_score(explanation):
     s = explanation.get('scores', {})
     if not isinstance(s, dict):
         return 0
-    
+
     fuz_score = s.get('fuzz', 0)
     det_score = s.get('detection', 0)
     emb_score = s.get('embedding', 0)
 
     # 가중치
     final_score = (fuz_score * 0.5) + (det_score * 0.3) + (emb_score * 0.2)
-    
+
     return final_score
 
 def process():
@@ -85,14 +85,36 @@ def process():
     print("UMAP Reduction...")
     embeddings = model.encode(all_combined_texts, show_progress_bar=True)
 
-    reducer = umap.UMAP(n_neighbors=10, n_components=2, min_dist=0.0, metric='cosine', random_state=42)
+    
+    # UMAP 기존 코드
+    # reducer = umap.UMAP(n_neighbors=10, n_components=2, min_dist=0.0, metric='cosine', random_state=42)
+    # 수정본
+    reducer = umap.UMAP(
+        n_neighbors=10, 
+        n_components=2, # 2차원
+        min_dist=0.0, 
+        metric='cosine', 
+        random_state=42,
+        n_jobs=-1  
+    )
     embedding_2d = reducer.fit_transform(embeddings)
 
     df['x'] = embedding_2d[:, 0]
     df['y'] = embedding_2d[:, 1]
 
     print("HDBSCAN Clustering...")
-    clusterer = hdbscan.HDBSCAN(min_cluster_size=3, cluster_selection_method='leaf')
+    
+    # HDBSCAN 기존 코드
+    # clusterer = hdbscan.HDBSCAN(min_cluster_size=3, cluster_selection_method='leaf')
+    # 수정본
+    clusterer = hdbscan.HDBSCAN(
+        min_cluster_size=7,
+        min_samples=1,
+        cluster_selection_epsilon=0.1,
+        cluster_selection_method='leaf',
+        core_dist_n_jobs=-1 
+    )
+
     df['cluster_id'] = clusterer.fit_predict(embeddings)
 
     print("Generating Cluster Tags...")
@@ -112,8 +134,34 @@ def process():
         cluster_tags[cid] = tag
 
     df['group_tag'] = df['cluster_id'].map(cluster_tags).fillna("Misc")
+
+    # ==============클러스터 통계================
+
+    # 1. 노이즈(-1) 개수와 실제 클러스터 개수 계산
+    n_noise = len(df[df['cluster_id'] == -1])
+    n_clusters = len(df['cluster_id'].unique()) - (1 if n_noise > 0 else 0)
+
+    # 2. 클러스터별 태그, 개수 출력
+    print("-" * 50)
+    print(f"• Total Feature: {len(df)}")
+    print(f"• Clusters : {n_clusters}")
+    print(f"• Noise : {n_noise} (Misc)")
+    print("-" * 50)
+    print(f"{'ID':<5} | {'Tag (Label)':<20} | {'Count':<5}")
+    print("-" * 50)
+    stats = df.groupby(['cluster_id', 'group_tag']).size().reset_index(name='count')
+    for _, row in stats.iterrows():
+        c_id = row['cluster_id']
+        tag = row['group_tag']
+        count = row['count']
+        
+        # 노이즈(-1)는 'Misc'로 표시되거나 별도 표기
+        id_str = str(c_id) if c_id != -1 else "Noise"
+        print(f"{id_str:<5} | {tag:<20} | {count:<5}")
+    # ==========================================
+
     del df['temp_text']
-    
+
     final_output = { "data": df.to_dict(orient='records') }
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(final_output, f, ensure_ascii=False)
