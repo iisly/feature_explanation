@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -20,15 +20,16 @@
         margin: 0;
         display: flex;
         height: 100vh;
-        font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI",
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI",
           sans-serif;
         overflow: hidden;
         color: var(--primary);
         background: #fff;
       }
       #sidebar {
-        width: 420px;
-        min-width: 380px;
+        width: 380px;
+        min-width: 360px;
         background: #fff;
         border-right: 1px solid var(--border);
         display: flex;
@@ -68,29 +69,6 @@
         align-items: center;
         width: 100%;
       }
-      .icon-btn {
-        background: none;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        width: 42px;
-        height: 42px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        color: #666;
-        transition: all 0.2s ease;
-      }
-      .icon-btn:hover {
-        border-color: #111;
-        color: #111;
-        background: #f9f9f9;
-      }
-      .icon-btn svg {
-        width: 20px;
-        height: 20px;
-        stroke-width: 2;
-      }
       .search-box {
         flex: 1;
         display: flex;
@@ -113,6 +91,29 @@
         width: 18px;
         height: 18px;
         stroke-width: 2.5;
+      }
+      .icon-btn {
+        background: none;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #666;
+        transition: all 0.2s ease;
+      }
+      .icon-btn:hover {
+        border-color: #111;
+        color: #111;
+        background: #f9f9f9;
+      }
+      .icon-btn svg {
+        width: 20px;
+        height: 20px;
+        stroke-width: 2;
       }
       input {
         flex: 1;
@@ -141,7 +142,7 @@
         color: white;
         cursor: pointer;
         transition: 0.1s;
-        opacity: 0.85;
+        opacity: 0.8;
       }
       .tag-btn:hover {
         transform: translateY(-1px);
@@ -262,6 +263,15 @@
         gap: 8px;
         font-size: 0.85rem;
       }
+      .badge {
+        padding: 3px 8px;
+        border-radius: 4px;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+      }
       .model-card {
         background: #fff;
         border: 1px solid #eee;
@@ -280,16 +290,17 @@
       .model-text {
         font-size: 0.95rem;
         line-height: 1.5;
-        color: #444;
+        color: #333;
       }
-      .badge {
-        padding: 3px 8px;
-        border-radius: 4px;
-        color: white;
-        font-size: 0.75rem;
-        font-weight: 700;
-        display: inline-flex;
+      .placeholder {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
         align-items: center;
+        color: #999;
+        text-align: center;
+        font-weight: 500;
       }
       #loader {
         position: absolute;
@@ -316,15 +327,61 @@
           transform: rotate(360deg);
         }
       }
-      .placeholder {
+      #minimap {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        width: 180px;
+        height: 135px;
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        z-index: 50;
+      }
+      #minimap-svg {
+        width: 100%;
         height: 100%;
+      }
+      .minimap-viewbox {
+        fill: rgba(0, 0, 0, 0.02);
+        stroke: #111;
+        stroke-width: 0.5;
+        rx: 8px;
+      }
+      #zoom-level {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background: #111;
+        color: #fff;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 700;
+        pointer-events: none;
+        opacity: 0.8;
+      }
+      #legend-box {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 90px;
+        height: 90px;
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
         display: flex;
-        flex-direction: column;
-        justify-content: center;
         align-items: center;
-        color: #999;
-        text-align: center;
-        font-weight: 500;
+        justify-content: center;
+        z-index: 50;
+        pointer-events: none;
       }
     </style>
   </head>
@@ -333,7 +390,7 @@
       <div class="spinner"></div>
       <div
         id="loading-text"
-        style="font-weight: 600; font-size: 1rem; color: #444"
+        style="font-weight: 600; font-size: 1rem; color: #333"
       >
         Loading Cosmos
       </div>
@@ -394,7 +451,16 @@
         </div>
       </div>
     </div>
-    <div id="chart"></div>
+    <div id="chart">
+      <div id="minimap">
+        <svg id="minimap-svg"></svg>
+        <div id="zoom-level">x1.0</div>
+      </div>
+
+      <div id="legend-box">
+        <svg id="legend-svg" width="100%" height="100%"></svg>
+      </div>
+    </div>
 
     <script type="module">
       import { pipeline } from "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0";
@@ -419,12 +485,16 @@
         color: null,
       };
 
+      let mini = { svg: null, x: null, y: null, brush: null, scale: 0.15 };
+
       async function init() {
         try {
           const res = await d3.json("d3_data_v2.json");
           state.data = res.data;
 
           state.data.forEach((f) => {
+            f.model_scores = { gpt: 0, gemini: 0, llama: 0 };
+
             if (f.all_explanations && f.all_explanations.length > 0) {
               let bestExp = null;
               let maxScore = -Infinity;
@@ -445,6 +515,27 @@
                 f.source_model = bestExp.llm_explainer;
                 f.source_score = maxScore;
               }
+
+              f.all_explanations.forEach((e) => {
+                const s = e.scores || {};
+                const weightedScore =
+                  (s.fuzz || 0) * 0.5 +
+                  (s.detection || 0) * 0.3 +
+                  (s.embedding || 0) * 0.2;
+
+                const name = (e.llm_explainer || "").toLowerCase();
+
+                if (name.includes("gpt")) {
+                  if (weightedScore > f.model_scores.gpt)
+                    f.model_scores.gpt = weightedScore;
+                } else if (name.includes("gemini")) {
+                  if (weightedScore > f.model_scores.gemini)
+                    f.model_scores.gemini = weightedScore;
+                } else if (name.includes("llama")) {
+                  if (weightedScore > f.model_scores.llama)
+                    f.model_scores.llama = weightedScore;
+                }
+              });
             }
           });
 
@@ -457,7 +548,7 @@
               y: f.y,
               default_display: f.display_text,
               default_model: f.source_model,
-            }))
+            })),
           );
 
           initVis(state.data);
@@ -467,7 +558,7 @@
             "Initializing AI Engine";
           state.pipeline = await pipeline(
             "feature-extraction",
-            "Xenova/all-MiniLM-L6-v2"
+            "Xenova/all-MiniLM-L6-v2",
           );
 
           document.getElementById("loader").style.opacity = 0;
@@ -477,6 +568,166 @@
           document.getElementById("loading-text").innerText =
             "Failed to load data";
         }
+      }
+
+      function createTriStarPath(scores) {
+        const rCore = 3.5;
+        const scale = 15;
+        const halfBaseAng = 10 * (Math.PI / 180);
+
+        const configs = [
+          { val: scores.gpt || 0, ang: -Math.PI / 2 },
+          { val: scores.gemini || 0, ang: -Math.PI / 2 + (2 * Math.PI) / 3 },
+          { val: scores.llama || 0, ang: -Math.PI / 2 + (4 * Math.PI) / 3 },
+        ];
+
+        let path = "";
+
+        configs.forEach((c, i) => {
+          const len = c.val * scale;
+          const tipDist = rCore + len;
+
+          const tipX = Math.cos(c.ang) * tipDist;
+          const tipY = Math.sin(c.ang) * tipDist;
+
+          const bLeftA = c.ang - halfBaseAng;
+          const bRightA = c.ang + halfBaseAng;
+
+          const bLeftX = Math.cos(bLeftA) * rCore;
+          const bLeftY = Math.sin(bLeftA) * rCore;
+          const bRightX = Math.cos(bRightA) * rCore;
+          const bRightY = Math.sin(bRightA) * rCore;
+
+          const cpDist = rCore + len * 0.25;
+          const cpOffset = halfBaseAng * 0.5;
+
+          const cpLeftX = Math.cos(c.ang - cpOffset) * cpDist;
+          const cpLeftY = Math.sin(c.ang - cpOffset) * cpDist;
+          const cpRightX = Math.cos(c.ang + cpOffset) * cpDist;
+          const cpRightY = Math.sin(c.ang + cpOffset) * cpDist;
+
+          if (i === 0) {
+            path += `M ${bLeftX},${bLeftY} `;
+          } else {
+            path += `A ${rCore} ${rCore} 0 0 1 ${bLeftX},${bLeftY} `;
+          }
+
+          path += `Q ${cpLeftX},${cpLeftY} ${tipX},${tipY} `;
+          path += `Q ${cpRightX},${cpRightY} ${bRightX},${bRightY} `;
+        });
+
+        const startA = configs[0].ang - halfBaseAng;
+        const startX = Math.cos(startA) * rCore;
+        const startY = Math.sin(startA) * rCore;
+        path += `A ${rCore} ${rCore} 0 0 1 ${startX},${startY} Z`;
+
+        return path;
+      }
+
+      function initMinimap(data) {
+        const container = document.getElementById("minimap");
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+
+        mini.svg = d3.select("#minimap-svg").attr("width", w).attr("height", h);
+
+        const padding = 12;
+        const xExtent = d3.extent(data, (d) => d.x);
+        const yExtent = d3.extent(data, (d) => d.y);
+
+        mini.x = d3
+          .scaleLinear()
+          .domain(xExtent)
+          .range([padding, w - padding]);
+        mini.y = d3
+          .scaleLinear()
+          .domain(yExtent)
+          .range([h - padding, padding]);
+
+        mini.svg
+          .selectAll("circle")
+          .data(data)
+          .join("circle")
+          .attr("cx", (d) => mini.x(d.x))
+          .attr("cy", (d) => mini.y(d.y))
+          .attr("r", 1)
+          .attr("fill", (d) => getTagColor(d.group_tag))
+          .attr("opacity", 0.6);
+
+        mini.brush = mini.svg
+          .append("rect")
+          .attr("class", "minimap-viewbox")
+          .attr("x", 0)
+          .attr("y", 0)
+          .attr("width", 0)
+          .attr("height", 0);
+      }
+
+      function updateMinimap(transform) {
+        if (!mini.svg) return;
+
+        const c = document.getElementById("chart");
+        const mainW = c.clientWidth;
+        const mainH = c.clientHeight;
+
+        const x0 = viz.x.invert((0 - transform.x) / transform.k);
+        const x1 = viz.x.invert((mainW - transform.x) / transform.k);
+        const y1 = viz.y.invert((0 - transform.y) / transform.k);
+        const y0 = viz.y.invert((mainH - transform.y) / transform.k);
+
+        const miniX = mini.x(x0);
+        const miniW = mini.x(x1) - mini.x(x0);
+        const miniH = mini.y(y1) - mini.y(y0);
+
+        mini.brush
+          .attr("x", miniX)
+          .attr("y", Math.min(mini.y(y0), mini.y(y1)))
+          .attr("width", Math.abs(miniW))
+          .attr("height", Math.abs(miniH));
+
+        document.getElementById("zoom-level").innerText =
+          `x${transform.k.toFixed(1)}`;
+      }
+
+      function drawLegend() {
+        const svg = d3.select("#legend-svg");
+        svg.selectAll("*").remove();
+
+        const legendScores = { gpt: 1, gemini: 1, llama: 1 };
+
+        svg
+          .append("path")
+          .attr("d", createTriStarPath(legendScores))
+          .attr("transform", "translate(45, 50)")
+          .attr("fill", "#555")
+          .attr("stroke", "none")
+          .attr("opacity", 0.8);
+
+        const labels = [
+          { text: "GPT", x: 45, y: 25, align: "middle" },
+          { text: "Gemini", x: 70, y: 76, align: "middle" },
+          { text: "Llama", x: 20, y: 76, align: "middle" },
+        ];
+
+        const getLabelColor = (t) => {
+          const n = t.toLowerCase();
+          if (n.includes("gpt")) return "#10a37f";
+          if (n.includes("gemini")) return "#1a73e8";
+          if (n.includes("llama")) return "#8e44ad";
+          return "#333";
+        };
+
+        svg
+          .selectAll("text")
+          .data(labels)
+          .join("text")
+          .attr("x", (d) => d.x)
+          .attr("y", (d) => d.y)
+          .text((d) => d.text)
+          .attr("text-anchor", (d) => d.align)
+          .attr("font-size", "11px")
+          .attr("font-weight", "700")
+          .attr("fill", (d) => getLabelColor(d.text));
       }
 
       function initVis(data) {
@@ -492,7 +743,10 @@
         viz.zoom = d3
           .zoom()
           .scaleExtent([0.5, 12])
-          .on("zoom", (e) => viz.g.attr("transform", e.transform));
+          .on("zoom", (e) => {
+            viz.g.attr("transform", e.transform);
+            updateMinimap(e.transform);
+          });
         viz.svg.call(viz.zoom).on("click", resetHome);
 
         viz.x = d3
@@ -516,12 +770,12 @@
         ]);
 
         viz.circles = viz.g
-          .selectAll("circle")
+          .selectAll("path.star-point")
           .data(data)
-          .join("circle")
-          .attr("cx", (d) => viz.x(d.x))
-          .attr("cy", (d) => viz.y(d.y))
-          .attr("r", 5)
+          .join("path")
+          .attr("class", "star-point")
+          .attr("transform", (d) => `translate(${viz.x(d.x)}, ${viz.y(d.y)})`)
+          .attr("d", (d) => createTriStarPath(d.model_scores))
           .attr("fill", (d) => getTagColor(d.group_tag))
           .attr("opacity", 0.6)
           .style("cursor", "pointer")
@@ -529,6 +783,9 @@
             e.stopPropagation();
             selectFeature(d.feature_id);
           });
+
+        initMinimap(data);
+        drawLegend();
 
         const centroids = d3
           .groups(data, (d) => d.group_tag)
@@ -561,12 +818,19 @@
         return tag === "Misc" ? "#999" : viz.color(tag);
       }
 
-      function zoomTo(x, y, k = 2) {
+      function zoomTo(x, y, targetK = 2) {
         const c = document.getElementById("chart");
+
+        const currentTransform = d3.zoomTransform(viz.svg.node());
+        const currentK = currentTransform.k;
+
+        const finalK = Math.max(currentK, targetK);
+
         const t = d3.zoomIdentity
           .translate(c.clientWidth / 2, c.clientHeight / 2)
-          .scale(k)
+          .scale(finalK)
           .translate(-viz.x(x), -viz.y(y));
+
         viz.svg.transition().duration(600).call(viz.zoom.transform, t);
       }
 
@@ -588,10 +852,10 @@
       window.nav = function (dir) {
         state.index = Math.max(
           0,
-          Math.min(state.neighbors.length - 1, state.index + dir)
+          Math.min(state.neighbors.length - 1, state.index + dir),
         );
         const target = state.data.find(
-          (d) => d.feature_id === state.neighbors[state.index].id
+          (d) => d.feature_id === state.neighbors[state.index].id,
         );
         updateDetail(target);
         highlight([target]);
@@ -614,15 +878,15 @@
               </div>
             </div>
             <span class="cluster-badge" style="background:${color}">${
-          d.group_tag
-        }</span>
+              d.group_tag
+            }</span>
             <h2 class="feature-title">#${d.feature_id}</h2>
             <div class="best-exp-box">
               <div class="best-text">"${d.display_text}"</div>
               <div class="best-meta">
                 <span class="badge" style="background:${modelStyle.color}">${
-          modelStyle.name
-        }</span>
+                  modelStyle.name
+                }</span>
                 <span>Weighted Score: ${(d.source_score || 0).toFixed(2)}</span>
               </div>
             </div>
@@ -655,7 +919,7 @@
       async function handleSearch() {
         const q = document.getElementById("search-input").value;
         if (!q) return;
-        document.getElementById("search-input").style.opacity = 0.5;
+        document.getElementById("search-input").style.opacity = 0.6;
         const emb = await state.pipeline(q, {
           pooling: "mean",
           normalize: true,
@@ -682,7 +946,7 @@
           zoomTo(
             d3.mean(filtered, (d) => d.x),
             d3.mean(filtered, (d) => d.y),
-            1.5
+            1.5,
           );
         document.getElementById("search-input").style.opacity = 1;
       }
@@ -698,13 +962,13 @@
           zoomTo(
             d3.mean(targets, (d) => d.x),
             d3.mean(targets, (d) => d.y),
-            1.5
+            1.5,
           );
       }
 
       function renderList(items, title) {
         const container = document.getElementById("content-area");
-        let html = `<div style="padding:20px 24px; border-bottom:1px solid #eee; font-weight:800; font-size:1rem; color:#444;">${title} (${items.length})</div>`;
+        let html = `<div style="padding:20px 24px; border-bottom:1px solid #eee; font-weight:800; font-size:1rem; color:#333;">${title} (${items.length})</div>`;
         items.forEach((item) => {
           const isSearch = state.mode === "search";
           const dText = isSearch ? item.text : item.display_text;
@@ -716,12 +980,12 @@
               <div class="list-item-title">${dText}</div>
               <div class="list-item-meta">
                 <span class="badge" style="background:${mStyle.color}">${
-            mStyle.name
-          }</span>
+                  mStyle.name
+                }</span>
                 <span style="color:#ddd">|</span>
                 <span style="color:${color}; font-weight:bold;">${
-            item.group_tag
-          }</span>
+                  item.group_tag
+                }</span>
                 <span style="color:#ddd">•</span>
                 <span>#${item.feature_id}</span>
                 ${
@@ -742,7 +1006,7 @@
         viz.circles
           .transition()
           .duration(200)
-          .attr("opacity", (d) => (ids.has(d.feature_id) ? 1 : 0.25))
+          .attr("opacity", (d) => (ids.has(d.feature_id) ? 1 : 0.2))
           .attr("stroke", (d) => (ids.has(d.feature_id) ? "#111" : "none"))
           .attr("stroke-width", (d) => (ids.has(d.feature_id) ? 2 : 0));
         viz.circles.filter((d) => ids.has(d.feature_id)).raise();
@@ -759,9 +1023,8 @@
       function resetHome() {
         state.mode = "idle";
         document.getElementById("search-input").value = "";
-        document.getElementById(
-          "content-area"
-        ).innerHTML = `<div class="placeholder"><div>Select a feature point<br>or enter a search term</div></div>`;
+        document.getElementById("content-area").innerHTML =
+          `<div class="placeholder"><div>Select a feature point<br>or enter a search term</div></div>`;
         viz.circles
           .transition()
           .duration(500)
@@ -814,4 +1077,3 @@
     </script>
   </body>
 </html>
-
