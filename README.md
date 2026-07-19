@@ -1,6 +1,6 @@
-## Feature Explanation의 일관성 평가를 위한 인터랙티브 시각화 시스템 개발
+# feature_explanation
 25-2 산학협력프로젝트
-
+주제: Feature Explanation의 일관성 평가를 위한 인터랙티브 시각화 시스템 개발
 
 Interactive Visualization Interface for SAE feature
 
