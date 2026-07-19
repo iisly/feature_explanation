@@ -1,10 +1,6 @@
 ## Feature Explanation의 일관성 평가를 위한 인터랙티브 시각화 시스템 개발
 25-2 산학협력프로젝트
 
-지도교수: 조재민 교수님
-
-프로젝트 기간: 2025년 2학기
-
 
 Interactive Visualization Interface for SAE feature
 
