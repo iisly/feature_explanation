@@ -1,5 +1,5 @@
 # feature_explanation
-25-2 Project
+25-2 Industry-Academic Cooperation Project
 
 Feature Explanation의 일관성 평가를 위한 Interactive Visualization System
 
